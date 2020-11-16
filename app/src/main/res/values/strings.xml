@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Android Map Project</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="success_popup">Rota bilgilerinde değişiklik olabilir, böyle bir durumda sizi bilgilendireceğiz.</string>
+    <string name="failure_popup">Bir aksilik yüzünden işleminiz gerçekleştirilemedi, tekrar denemek ister misiniz?</string>
+    <string name="request_popup">Bu istasyondan ofise gitmek için yolculuğa katılmak ister misiniz?</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır, Teşekkürler</string>
+    <string name="retry">Tekrar Dene</string>
+    <string name="giveup">Vazgeç</string>
+    <string name="ok">Tamam</string>
+    <string name="error">Hata!</string>
+    <string name="reservation_done">Rezervasyonunuz Tamamlandı!</string>
+
+
+</resources>
