@@ -50,14 +50,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mapsPresenter= MapsActivityPresenter(this,mMap)
-        mapsPresenter.setView(this)
         mapsPresenter.customDrawables()
+        mapsPresenter.setView(this)
         mapsPresenter.getLocation()
+
 
     }
 
-    override fun clicks() {
+    override fun clicks(workLatLng: LatLng) {
+        mMap.setOnMarkerClickListener {
+            marker->
+            mapsPresenter.drawRoute(marker.position,workLatLng)
 
+            true
+        }
     }
 
     override fun initView() {
