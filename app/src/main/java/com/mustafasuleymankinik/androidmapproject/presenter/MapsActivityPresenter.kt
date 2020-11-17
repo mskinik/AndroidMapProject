@@ -71,6 +71,7 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
 
 
     override fun addMarker(l:Locations) {
+
         val stringLatLng=l.centerCoordinates?.split(",")!!
         if(l.id=="ERR-400")
         {
