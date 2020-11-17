@@ -49,7 +49,7 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
             }
 
 
-        vView.clicks(workLatLng)
+
     }
 
     override fun customDrawables() {
@@ -76,6 +76,7 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
         {
             workLatLng= LatLng(stringLatLng.get(0).toDouble(),stringLatLng.get(1).toDouble())
             vMap.addMarker(MarkerOptions().position(LatLng(stringLatLng.get(0).toDouble(),stringLatLng.get(1).toDouble())).icon(workPlaceIcon).title(l.name))
+            vView.clicks(workLatLng)
         }
         else
         {
