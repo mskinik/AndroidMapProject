@@ -40,7 +40,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
         setContentView(R.layout.activity_maps)
 
         val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
+            .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
     }
@@ -51,16 +51,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
         mMap = googleMap
         mapsPresenter= MapsActivityPresenter(this,mMap)
         mapsPresenter.customDrawables()
+        mapsPresenter.dialogs(this)
         mapsPresenter.setView(this)
         mapsPresenter.getLocation()
-
 
     }
 
     override fun clicks(workLatLng: LatLng) {
         mMap.setOnMarkerClickListener {
-            marker->
-            mapsPresenter.drawRoute(marker.position,workLatLng)
+                marker->
+            mapsPresenter.drawRoute(marker.position,workLatLng,marker.snippet)
 
             true
         }
