@@ -24,7 +24,7 @@
             android:background="@android:color/white"
             android:orientation="vertical">
             <TextView
-                android:id="@+id/dialog_title"
+                android:id="@+id/suggestTitle"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
                 android:gravity="center"
@@ -42,7 +42,6 @@
                 >
 
                 <TextView
-                    android:id="@+id/dialog_title2"
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:gravity="center"

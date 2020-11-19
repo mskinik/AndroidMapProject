@@ -1,11 +1,14 @@
 package com.mustafasuleymankinik.androidmapproject.presenter
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.location.Location
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
+import android.widget.TextView
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
@@ -14,6 +17,7 @@ import com.mustafasuleymankinik.androidmapproject.R
 import com.mustafasuleymankinik.androidmapproject.contract.MapsActivityContract
 import com.mustafasuleymankinik.androidmapproject.model.Locations
 import com.mustafasuleymankinik.androidmapproject.model.PostValues
+import com.mustafasuleymankinik.androidmapproject.model.Route
 import com.mustafasuleymankinik.androidmapproject.network.GOOGLE_URL
 import com.mustafasuleymankinik.androidmapproject.network.NetworkClient
 import com.mustafasuleymankinik.androidmapproject.network.URL
@@ -22,26 +26,32 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fail_dialog.*
 import kotlinx.android.synthetic.main.question_dialog.*
 import kotlinx.android.synthetic.main.success_dialog.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import javax.inject.Inject
 
-class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivityContract.Presenter{
-    var vContext:Context=context
-    var vMap=googleMap
+class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presenter{
+    lateinit var vContext:Context
+    lateinit var vMap:GoogleMap
+    lateinit var vView: MapsActivityContract.View
     lateinit var busIcon: BitmapDescriptor
     lateinit var workLatLng: LatLng
     lateinit var workPlaceIcon: BitmapDescriptor
     lateinit var currentIcon:BitmapDescriptor
     lateinit var startRouteIcon:BitmapDescriptor
     lateinit var endRouteIcon:BitmapDescriptor
-    lateinit var vView: MapsActivityContract.View
     lateinit var successDialog: AlertDialog
     lateinit var failDialog: AlertDialog
-    lateinit var suggestDialog: AlertDialog
+    lateinit var viewSub: View
+    lateinit var route: Route
+    lateinit var view: View
+    lateinit var suggestDialog: Dialog
+
     var pointListString=ArrayList<String>()
     var currentMark: Marker? =null
-    override fun setView(view: MapsActivityContract.View) {
+
+    override fun setView(view: MapsActivityContract.View,context: Context,googleMap: GoogleMap) {
+        vContext=context
+        vView=view
+        vMap=googleMap
         vView=view
         vView.initView()
         vView.permission()
@@ -49,12 +59,16 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
 
     override fun dialogs(context: Context) {
 
+        view=LayoutInflater.from(context).inflate(R.layout.question_dialog,null)
+        viewSub=LayoutInflater.from(context).inflate(R.layout.question_dialog,null)
         failDialog=
-            AlertDialog.Builder(context,R.style.DialogTheme).setView(LayoutInflater.from(context).inflate(R.layout.fail_dialog,null)).setCancelable(false).create()
+            AlertDialog.Builder(context,R.style.DialogTheme).setView(view).setCancelable(false).create()
         successDialog=
             AlertDialog.Builder(context,R.style.DialogTheme).setView(LayoutInflater.from(context).inflate(R.layout.success_dialog,null)).setCancelable(false).create()
         suggestDialog=
             AlertDialog.Builder(context,R.style.DialogTheme).setView(LayoutInflater.from(context).inflate(R.layout.question_dialog,null)).setCancelable(false).create()
+
+
     }
 
     override fun getLocation() {
@@ -91,13 +105,14 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
         vMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude,location.longitude),15F))
     }
 
-    override fun drawRoute(startLatLng: LatLng,workLatLng: LatLng,id:String) {
-
-
+    override fun drawRoute(marker: Marker,workLatLng: LatLng) {
         suggestDialog.show()
+        viewSub=LayoutInflater.from(vContext).inflate(R.layout.question_dialog,null)
+        var textView2:TextView=suggestDialog.findViewById(R.id.suggestTitle)
+        textView2.text=marker.title
 
         suggestDialog.suggestYes.setOnClickListener {
-            if(startLatLng==workLatLng)
+            if(marker.position==workLatLng)
             {
                 failDialog.show()
                 failDialog.failGiveUp.setOnClickListener {
@@ -110,16 +125,16 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
             }
             else
             {
-                val route=NetworkClient.clientService(GOOGLE_URL).getDirections("${startLatLng.latitude},${startLatLng.longitude}","${workLatLng.latitude},${workLatLng.longitude}","AIzaSyCSkipMTQc3FcjwNFZLz91dKhCATp1kglI")
+                val networkRoute=NetworkClient.clientService(GOOGLE_URL)
+                    .getDirections("${marker.position.latitude},${marker.position.longitude}","${workLatLng.latitude},${workLatLng.longitude}","")
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { response->
                         if(response.status.equals("OK"))
                         {
                             val legs = response.routes[0].legs[0]
-                            val route = com.mustafasuleymankinik.androidmapproject.model.Route(
-                                "",
-                                "",
+                            route = com.mustafasuleymankinik.androidmapproject.model.Route(
+
                                 legs.startLocation.lat,
                                 legs.startLocation.lng,
                                 legs.endLocation.lat,
@@ -129,8 +144,8 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
                             val startLatLng = LatLng(route.startLat!!, route.startLng!!)
                             val endLatLng = LatLng(route.endLat!!, route.endLng!!)
                             vMap.clear()
-                            vMap.addMarker( MarkerOptions().position(startLatLng).icon(startRouteIcon).title(route.startName))
-                            vMap.addMarker(MarkerOptions().position(endLatLng).icon(endRouteIcon).title(route.endName))
+                            vMap.addMarker( MarkerOptions().position(startLatLng).icon(startRouteIcon))
+                            vMap.addMarker(MarkerOptions().position(endLatLng).icon(endRouteIcon))
                             vMap.moveCamera(CameraUpdateFactory.newLatLngZoom(endLatLng, 15F))
                             val polylineOptions = PolylineOptions()
 
@@ -149,7 +164,7 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
 
                             }
 
-                            sendLocation(pointListString,startLatLng,endLatLng,id)
+                            sendLocation(pointListString,startLatLng,endLatLng,marker.snippet)
                             vMap.addPolyline(polylineOptions)
 
                         }
@@ -173,6 +188,7 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
 
     }
 
+
     private fun sendLocation(
         pointListString: ArrayList<String>,
         startLatLng: LatLng,
@@ -184,8 +200,7 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
         ).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                response->
-                Log.d("TAG", "response : $response ")
+                    response->
             }
 
 
@@ -193,7 +208,7 @@ class MapsActivityPresenter(context: Context, googleMap: GoogleMap):MapsActivity
     }
 
 
-    override fun addMarker(l:Locations) {
+    private fun addMarker(l:Locations) {
 
         val stringLatLng=l.centerCoordinates?.split(",")!!
         if(l.id=="ERR-400")
