@@ -13,8 +13,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.PolyUtil
+import com.mustafasuleymankinik.androidmapproject.DaggerActivityComponent
 import com.mustafasuleymankinik.androidmapproject.R
 import com.mustafasuleymankinik.androidmapproject.contract.MapsActivityContract
+import com.mustafasuleymankinik.androidmapproject.db.MapsActivityDatabase
+import com.mustafasuleymankinik.androidmapproject.db.MapsDao
+import com.mustafasuleymankinik.androidmapproject.db.RouteDetail
 import com.mustafasuleymankinik.androidmapproject.model.Locations
 import com.mustafasuleymankinik.androidmapproject.model.PostValues
 import com.mustafasuleymankinik.androidmapproject.model.Route
@@ -44,7 +48,10 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
     lateinit var route: Route
     lateinit var view: View
     lateinit var suggestDialog: Dialog
-
+    @Inject
+    lateinit var mapsActivityDatabase: MapsActivityDatabase
+    @Inject
+    lateinit var mapsDao: MapsDao
     var pointListString=ArrayList<String>()
     var currentMark: Marker? =null
 
@@ -94,6 +101,7 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
         startRouteIcon=BitmapDescriptorFactory.fromResource(R.drawable.ovalcopy2)
         endRouteIcon=BitmapDescriptorFactory.fromResource(R.drawable.ovalcopy)
 
+
     }
 
     override fun currentPosition(location:Location) {
@@ -101,7 +109,7 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
         {
             currentMark?.remove()
         }
-        currentMark=vMap.addMarker(MarkerOptions().position(LatLng(location.latitude,location.longitude)).icon(currentIcon).title("Konumum"))
+        currentMark=vMap.addMarker(MarkerOptions().position(LatLng(location.latitude,location.longitude)).icon(currentIcon).title("My current location"))
         vMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude,location.longitude),15F))
     }
 
@@ -126,7 +134,7 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
             else
             {
                 val networkRoute=NetworkClient.clientService(GOOGLE_URL)
-                    .getDirections("${marker.position.latitude},${marker.position.longitude}","${workLatLng.latitude},${workLatLng.longitude}","")
+                    .getDirections("${marker.position.latitude},${marker.position.longitude}","${workLatLng.latitude},${workLatLng.longitude}","AIzaSyCmONGIGTxGuXkAXybbxbGGgqAvOyjrJRg")
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { response->
@@ -139,6 +147,7 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
                                 legs.startLocation.lng,
                                 legs.endLocation.lat,
                                 legs.endLocation.lng,
+                                legs.distance.value,
                                 response.routes[0].overviewPolyline.points
                             )
                             val startLatLng = LatLng(route.startLat!!, route.startLng!!)
@@ -173,7 +182,9 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
                 suggestDialog.dismiss()
                 successDialog.show()
                 successDialog.successOK.setOnClickListener {
+                    mapsActivityDatabase.mapsDao().postDb(RouteDetail(0,marker.snippet,"Work Place",route.distance))
                     successDialog.dismiss()
+
                 }
             }
 
@@ -182,12 +193,7 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
             suggestDialog.dismiss()
         }
 
-
-
-
-
     }
-
 
     private fun sendLocation(
         pointListString: ArrayList<String>,
@@ -202,9 +208,6 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
             .subscribe {
                     response->
             }
-
-
-
     }
 
 

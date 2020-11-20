@@ -2,6 +2,7 @@ package com.mustafasuleymankinik.androidmapproject.view
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -24,8 +25,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mustafasuleymankinik.androidmapproject.DaggerActivityComponent
+
+
 import com.mustafasuleymankinik.androidmapproject.R
 import com.mustafasuleymankinik.androidmapproject.contract.MapsActivityContract
+import com.mustafasuleymankinik.androidmapproject.module.ActivityModule
 import com.mustafasuleymankinik.androidmapproject.presenter.MapsActivityPresenter
 import kotlinx.android.synthetic.main.activity_maps.*
 import javax.inject.Inject
@@ -48,7 +52,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        DaggerActivityComponent.builder().build().inject(this)
+        DaggerActivityComponent.builder()
+        .activityModule(ActivityModule(this)).build().inject(this)
 
 
     }
@@ -57,6 +62,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
         mapsPresenter.customDrawables()
         mapsPresenter.setView(this,this,mMap)
         mapsPresenter.dialogs(this)
@@ -65,22 +71,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
     }
 
     override fun clicks(workLatLng: LatLng) {
+        fabList.setOnClickListener {
+            startActivity(Intent(this@MapsActivity,RouteListActivity::class.java))
+        }
         mMap.setOnMarkerClickListener {
                 marker->
             mapsPresenter.drawRoute(marker,workLatLng)
-            fab.show()
-            fab.setOnClickListener {
+            fabRefresh.show()
+            fabRefresh.setOnClickListener {
                 mMap.clear()
-                fab.hide()
+                fabRefresh.hide()
                 mapsPresenter.getLocation()
 
             }
             true
         }
+
     }
 
     override fun initView() {
-        fab.hide()
+        fabRefresh.hide()
         locationManager=getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationListener=object:LocationListener{
             override fun onLocationChanged(p0: Location) {
@@ -116,10 +126,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
                 }
             }
         }
-        else
-        {
 
-        }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }

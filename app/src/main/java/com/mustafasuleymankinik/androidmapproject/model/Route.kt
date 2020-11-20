@@ -7,5 +7,6 @@ data class Route (
     val startLng:Double?,
     val endLat: Double?,
     val endLng: Double?,
+    val distance:Int?,
     val overviewPolyline: String=""
 )
