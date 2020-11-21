@@ -107,7 +107,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
         }
         else
         {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10000,15F,locationListener)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000,15F,locationListener)
             val lastLocation=locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             if(lastLocation!=null)
             {
@@ -122,7 +122,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,MapsActivityContrac
             {
                 if(ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED)
                 {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10000,15F,locationListener)
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000,15F,locationListener)
                 }
             }
         }

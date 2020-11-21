@@ -68,7 +68,7 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
         view=LayoutInflater.from(context).inflate(R.layout.question_dialog,null)
         viewSub=LayoutInflater.from(context).inflate(R.layout.question_dialog,null)
         failDialog=
-            AlertDialog.Builder(context,R.style.DialogTheme).setView(view).setCancelable(false).create()
+            AlertDialog.Builder(context,R.style.DialogTheme).setView(LayoutInflater.from(context).inflate(R.layout.fail_dialog,null)).setCancelable(false).create()
         successDialog=
             AlertDialog.Builder(context,R.style.DialogTheme).setView(LayoutInflater.from(context).inflate(R.layout.success_dialog,null)).setCancelable(false).create()
         suggestDialog=
@@ -121,13 +121,16 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
         suggestDialog.suggestYes.setOnClickListener {
             if(marker.position==workLatLng)
             {
+                suggestDialog.dismiss()
                 failDialog.show()
                 failDialog.failGiveUp.setOnClickListener {
                     failDialog.dismiss()
                 }
+
                 failDialog.failRetry.setOnClickListener{
                     failDialog.dismiss()
                 }
+
 
             }
             else
