@@ -25,6 +25,7 @@ import com.mustafasuleymankinik.androidmapproject.model.Route
 import com.mustafasuleymankinik.androidmapproject.network.GOOGLE_URL
 import com.mustafasuleymankinik.androidmapproject.network.NetworkClient
 import com.mustafasuleymankinik.androidmapproject.network.URL
+import com.mustafasuleymankinik.deneme123.directions.Directions
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fail_dialog.*
@@ -50,8 +51,6 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
     lateinit var suggestDialog: Dialog
     @Inject
     lateinit var mapsActivityDatabase: MapsActivityDatabase
-    @Inject
-    lateinit var mapsDao: MapsDao
     var pointListString=ArrayList<String>()
     var currentMark: Marker? =null
 
@@ -140,41 +139,7 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
                     .subscribe { response->
                         if(response.status.equals("OK"))
                         {
-                            val legs = response.routes[0].legs[0]
-                            route = com.mustafasuleymankinik.androidmapproject.model.Route(
-
-                                legs.startLocation.lat,
-                                legs.startLocation.lng,
-                                legs.endLocation.lat,
-                                legs.endLocation.lng,
-                                legs.distance.value,
-                                response.routes[0].overviewPolyline.points
-                            )
-                            val startLatLng = LatLng(route.startLat!!, route.startLng!!)
-                            val endLatLng = LatLng(route.endLat!!, route.endLng!!)
-                            vMap.clear()
-                            vMap.addMarker( MarkerOptions().position(startLatLng).icon(startRouteIcon))
-                            vMap.addMarker(MarkerOptions().position(endLatLng).icon(endRouteIcon))
-                            vMap.moveCamera(CameraUpdateFactory.newLatLngZoom(endLatLng, 15F))
-                            val polylineOptions = PolylineOptions()
-
-                            polylineOptions.width(10F)
-
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                polylineOptions.color(vContext.resources.getColor(R.color.colorPrimaryDark, vContext.theme))
-                            } else {
-                                polylineOptions.color(vContext.resources.getColor(R.color.colorPrimaryDark))
-                            }
-                            val pointsList = PolyUtil.decode(route.overviewPolyline)
-
-                            for (point in pointsList) {
-                                polylineOptions.add(point)
-                                pointListString.add(point.toString())
-
-                            }
-
-                            sendLocation(pointListString,startLatLng,endLatLng,marker.snippet)
-                            vMap.addPolyline(polylineOptions)
+                            polylineFunction(response,marker)
 
                         }
 
@@ -206,7 +171,9 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
         ).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                    response->
+                response->
+
+
             }
     }
 
@@ -226,6 +193,43 @@ class MapsActivityPresenter  @Inject constructor():MapsActivityContract.Presente
             vMap.addMarker(MarkerOptions().position(LatLng(stringLatLng.get(0).toDouble(),stringLatLng.get(1).toDouble())).icon(busIcon).snippet(l.id).title(l.name))
         }
 
+    }
+    private fun polylineFunction(response: Directions,marker:Marker){
+        val legs = response.routes[0].legs[0]
+        route = com.mustafasuleymankinik.androidmapproject.model.Route(
+
+            legs.startLocation.lat,
+            legs.startLocation.lng,
+            legs.endLocation.lat,
+            legs.endLocation.lng,
+            legs.distance.value,
+            response.routes[0].overviewPolyline.points
+        )
+        val startLatLng = LatLng(route.startLat!!, route.startLng!!)
+        val endLatLng = LatLng(route.endLat!!, route.endLng!!)
+        vMap.clear()
+        vMap.addMarker( MarkerOptions().position(startLatLng).icon(startRouteIcon))
+        vMap.addMarker(MarkerOptions().position(endLatLng).icon(endRouteIcon))
+        vMap.moveCamera(CameraUpdateFactory.newLatLngZoom(endLatLng, 15F))
+        val polylineOptions = PolylineOptions()
+
+        polylineOptions.width(10F)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            polylineOptions.color(vContext.resources.getColor(R.color.colorPrimaryDark, vContext.theme))
+        } else {
+            polylineOptions.color(vContext.resources.getColor(R.color.colorPrimaryDark))
+        }
+        val pointsList = PolyUtil.decode(route.overviewPolyline)
+
+        for (point in pointsList) {
+            polylineOptions.add(point)
+            pointListString.add(point.toString())
+
+        }
+
+        sendLocation(pointListString,startLatLng,endLatLng,marker.snippet)
+        vMap.addPolyline(polylineOptions)
     }
 
 }

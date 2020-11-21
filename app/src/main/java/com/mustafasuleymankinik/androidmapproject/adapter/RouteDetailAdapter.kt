@@ -26,6 +26,6 @@ class RouteDetailAdapter(val routeDetail:List<RouteDetail>): RecyclerView.Adapte
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.itemView.startIdTextView.text=routeDetail[position].startId
         holder.itemView.endIdTextView.text=routeDetail[position].endId
-        holder.itemView.distanceTextView.text=routeDetail[position].distance.toString()
+        holder.itemView.distanceTextView.text="Mesafe: ${routeDetail[position].distance.toString()} metre"
     }
 }

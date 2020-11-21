@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Context
 import androidx.room.Room
 import com.mustafasuleymankinik.androidmapproject.contract.MapsActivityContract
+import com.mustafasuleymankinik.androidmapproject.contract.RouteListActivityContract
 import com.mustafasuleymankinik.androidmapproject.db.MapsActivityDatabase
 import com.mustafasuleymankinik.androidmapproject.db.MapsDao
 import com.mustafasuleymankinik.androidmapproject.presenter.MapsActivityPresenter
+import com.mustafasuleymankinik.androidmapproject.presenter.RouteListActivityPresenter
 import com.mustafasuleymankinik.androidmapproject.view.MapsActivity
 import dagger.Module
 import dagger.Provides
@@ -23,6 +25,10 @@ class ActivityModule(val context: Context) {
     @Provides
     fun providePresenter():MapsActivityContract.Presenter{
         return MapsActivityPresenter()
+    }
+    @Provides
+    fun provideRouteListPresenter():RouteListActivityContract.Presenter{
+        return RouteListActivityPresenter()
     }
 
     @Provides
